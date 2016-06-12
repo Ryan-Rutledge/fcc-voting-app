@@ -6,8 +6,8 @@ var db = new sqlite3.Database(process.env.DB_NAME);
 
 var query = {};
 query.get = {
-	poll: db.prepare('SELECT * FROM polls WHERE id=?;'),
 	user: db.prepare('SELECT * from users WHERE id=?;'),
+	poll: db.prepare('SELECT * FROM polls WHERE id=?;'),
 	everypoll: db.prepare('SELECT * FROM polls;'),
 	userPolls: db.prepare('SELECT * FROM polls WHERE user_id=?;'),
 	pollTerms: db.prepare('SELECT * FROM terms WHERE poll_id=?;'),
@@ -22,10 +22,10 @@ query.set = {
 	vote: db.prepare('INSERT INTO votes(term_id, user_id, ip_address) VALUES(?, ?, ?);'),
 }
 
-function handle(cb, index) {
+function handle(cb) {
 	return function(err, results) {
 		if (err) console.error(err);
-		cb(index ? (results && results[index]):index);
+		cb(results);
 	}
 }
 
@@ -35,38 +35,48 @@ function getLastID(cb) {
 	}
 }
 
+function getUser(user_id, cb) {
+	query.get.user.get(user_id, handle(cb));
+}
+
+function setUser(user_id, name, cb) {
+	query.set.user.run(user_id, name, handle(
+		getLastID(cb)
+	));
+}
+
 function findOrCreateUser(user_id, name, cb) {
-	query.get.user.run(user_id, handle(function(users) {
-		if (users && users[0]) return cb(users[0]);
-		
-		query.set.user.run(user_id, name, handle(function() {
-			cb({ id: user_id, name: name });
-		}));
+	query.get.user.get(user_id, handle(function(user) {
+		if (user) return cb(user);
+
+		setUser(user_id, name, function(user_id) {
+			getUser(user_id, cb);
+		});
 	}))
 }
 
 function getPoll(cb) {
-	query.get.poll.run(handle(cb, 0))
+	query.get.poll.get(handle(cb))
 }
 
 function getEveryPoll(cb) {
-	query.get.everypoll.run(handle(cb));
+	query.get.everypoll.all(handle(cb));
 }
 
 function getUserPolls(user_id, cb) {
-	query.get.userPolls.run(user_id, handle(cb));
+	query.get.userPolls.all(user_id, handle(cb));
 }
 
 function getPollTerms(poll_id, cb) {
-	query.get.pollTerms.run(poll_id, handle(cb));
+	query.get.pollTerms.all(poll_id, handle(cb));
 }
 
 function getTermVotes(term_id, cb) {
-	query.get.termVotes.run(term_id, handle(cb));
+	query.get.termVotes.all(term_id, handle(cb));
 }
 
 function getPollVotes(poll_id, cb) {
-	query.get.pollVotes.run(poll_id, handle(cb));
+	query.get.pollVotes.all(poll_id, handle(cb));
 }
 
 function setPollTerm(poll_id, name, cb) {
@@ -89,10 +99,11 @@ function createPoll(user_id, name, cb) {
 	));
 }
 
-module.export = {
+module.exports = {
 	findOrCreateUser: findOrCreateUser,
 	get: {
 		poll: getPoll,
+		user: getUser,
 		everyPoll: getEveryPoll,
 		userPolls: getUserPolls,
 		pollTerms: getPollTerms,
