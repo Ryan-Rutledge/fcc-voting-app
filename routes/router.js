@@ -1,4 +1,5 @@
 var router = require('express').Router();
+var controller = require('../controller');
 
 router.use('/polls', require('./polls'));
 
