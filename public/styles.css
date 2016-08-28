@@ -8,3 +8,15 @@
 	margin: 0;
 	display: inline-block;
 }
+
+@media (max-width: 767px) {
+	#navbar p,
+	#navbar li {
+		display: block;
+		width: 100%;
+	}
+	#navbar .btn {
+		width: calc(100% - 30px);
+		margin: 0 15px;
+	}
+}
