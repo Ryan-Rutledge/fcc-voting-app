@@ -47,7 +47,7 @@ app.use(express.static('public'));
 app.use('/', require('./routes/router'));
 
 app.use(function(req, res) {
-	res.render('404');
+	res.status(404).render('404');
 });
 
 // Start server

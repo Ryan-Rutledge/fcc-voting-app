@@ -1,0 +1,12 @@
+form(action=poll.id+"/votes" method="POST")
+	fieldset.form-group
+		label Vote
+		select.form-control(name="vote")
+			for term in poll.terms
+				option(value=term.id)= term.name
+	fieldset.form-group
+		input.btn.btn-block.btn-primary(type="submit")
+
+if (user)
+	.form-group
+		button.btn.btn-block.btn-secondary.write-in-term(data-id=poll.id) Add an Option

@@ -28,7 +28,7 @@ $(function() {
 		});
 	}
 
-	// Add dynamic terms to new poll form
+	// Add dynamic terms to poll form
 	$('.new-term').click(function(e) {
 		e.preventDefault();
 		$('.term-set').append($term.clone(true));
@@ -37,4 +37,22 @@ $(function() {
 		$(this).closest('.form-group').remove();
 	});
 	var $term = $('.term-set .form-group').clone(true);
+
+	$('.write-in-term').click(function(e) {
+		e.preventDefault();
+		var $this = $(this);
+		var newTerm = prompt("What option would you like to add?");
+
+		// Send write-in to server
+		$.post(
+			'/polls/' + $this.data('id') + '/terms',
+			{ term: newTerm }
+		)
+			.done(function() {
+				location.reload();
+			})
+			.fail(function() {
+				alert('Error contacting server.\nUnable to write in option.');
+			});
+	});
 });

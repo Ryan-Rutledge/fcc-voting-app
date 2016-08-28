@@ -1,27 +1,20 @@
 extends layout
 
 block content
-	h2= poll.name
-		br
-		small= "A poll by " + poll.user.name
-
-	.container
-		.row
-			if (poll.vote.id)
-				.col-xs-12
-					canvas.poll-chart(data-id=poll.id)
-					h3.text-center You voted for 
-						span.text-muted= poll.vote.term
-			else
-				.col-xs-4
-					form(action=poll.id+"/votes" method="POST")
-						fieldset.form-group
-							label Vote
-							select.form-control(name="vote")
-								for term in poll.terms
-									option(value=term.id)= term.name
-						fieldset.form-group
-							input.btn.btn-block.btn-primary(type="submit")
-				.col-xs-8
-					canvas.poll-chart(data-id=poll.id)
+	.row
+		.col-xs-12
+			h2.text-center= poll.name
+				br
+				small= "A poll by " + poll.user.name
+	.row
+		if (poll.vote.id)
+			.col-xs-12
+				canvas.poll-chart(data-id=poll.id)
+				h3.text-center You voted for 
+					span.text-muted= poll.vote.term
+		else
+			.col-xs-4
+				include voteform
+			.col-xs-8
+				canvas.poll-chart(data-id=poll.id)
 

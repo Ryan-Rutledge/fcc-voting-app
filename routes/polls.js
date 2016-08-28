@@ -34,7 +34,7 @@ router.post('/', loggedIn, function(req, res) {
 router.get('/:id(\\d+)', function(req, res) {
 	// Get poll
 	controller.get.poll(req.params.id, function(poll) {
-		if (!poll) return res.render('404');
+		if (!poll) return res.status(404).render('404');
 
 		// Get poll owner
 		controller.get.user(poll.user_id, function(user) {
@@ -58,21 +58,37 @@ router.get('/:id(\\d+)/votes', function(req, res) {
 	});
 });
 
-router.post('/:id(\\d+)/votes', function(req, res) {
-	var redirect_url = '/polls/' + req.params.id;
+function vote(req, res, user_id, poll_id, term_id) {
+	poll_id = parseInt(poll_id);
+	term_id = parseInt(term_id);
 
-	if (!req.body.vote) return res.redirect(redirect_url);
+	var redirect_url = '/polls/' + poll_id;
+
+	if (!term_id) return res.redirect(redirect_url);
 
 	// Check if that user has already voted
-	controller.get.vote(parseInt(req.params.id), req.identifier, function(vote) {
+	controller.get.vote(poll_id, user_id, function(vote) {
 		if (vote !== undefined) return res.redirect(redirect_url);
 
 		// Add vote to poll
-		controller.set.termVote(req.body.vote, req.identifier, function() {
+		controller.set.termVote(term_id, user_id, function() {
 			return res.redirect(redirect_url);
 		});
 	});
+}
 
+router.post('/:id(\\d+)/votes', function(req, res) {
+	vote(req, res, req.identifier, req.params.id, req.body.vote);
+});
+
+router.post('/:id(\\d+)/terms', loggedIn, function(req, res) {
+	console.log(req.body.term);
+	var redirect_url = '/polls/' + req.params.id;
+	if (!req.body.term) return res.redirect(redirect_url);
+	
+	controller.set.pollTerm(parseInt(req.params.id), req.body.term, function(term_id) {
+		vote(req, res, req.identifier, req.params.id, term_id);
+	});
 });
 
 module.exports = router

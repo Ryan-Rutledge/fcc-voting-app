@@ -22,5 +22,5 @@ DROP TABLE IF EXISTS votes;
 CREATE TABLE votes(
 	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 	identifier TEXT NOT NULL,
-	term_id REFERENCES polls(id)
+	term_id REFERENCES terms(id) NOT NULL
 );
