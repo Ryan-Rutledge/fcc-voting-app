@@ -6,8 +6,9 @@ var db = new sqlite3.Database(process.env.DB_NAME);
 
 var query = {};
 query.get = {
-	user: db.prepare('SELECT * from users WHERE id=?;'),
+	user: db.prepare('SELECT * FROM users WHERE id=?;'),
 	poll: db.prepare('SELECT * FROM polls WHERE id=?;'),
+	vote: db.prepare("SELECT v.id AS 'id', t.name AS 'term' FROM votes v, terms t WHERE v.term_id=t.id AND t.poll_id=? AND v.identifier=?;"),
 	everypoll: db.prepare('SELECT * FROM polls ORDER BY name;'),
 	userPolls: db.prepare('SELECT * FROM polls WHERE user_id=? ORDER BY name;'),
 	pollTerms: db.prepare('SELECT * FROM terms WHERE poll_id=? ORDER BY name;'),
@@ -58,6 +59,10 @@ function getEveryPoll(cb) {
 	query.get.everypoll.all(handle(cb));
 }
 
+function getVote(poll_id, identifier, cb) {
+	query.get.vote.get(poll_id, identifier, handle(cb))
+}
+
 function getUserPolls(user_id, cb) {
 	query.get.userPolls.all(user_id, handle(cb));
 }
@@ -105,6 +110,7 @@ module.exports = {
 	get: {
 		poll: getPoll,
 		user: getUser,
+		vote: getVote,
 		everyPoll: getEveryPoll,
 		userPolls: getUserPolls,
 		pollTerms: getPollTerms,

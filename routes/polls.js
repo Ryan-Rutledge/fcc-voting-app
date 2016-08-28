@@ -14,24 +14,9 @@ router.get('/new', loggedIn, function(req, res) {
 
 router.post('/', loggedIn, function(req, res) {
 	// If input is valid
-	if (
-		req.body.name && (
-			req.body.term1 ||
-			req.body.term2 ||
-			req.body.term3 ||
-			req.body.term4 ||
-			req.body.term5
-		)
-	) {
-
+	if (req.body.name) {
 		// Filter terms
-		var terms = [
-			req.body.term1,
-			req.body.term2,
-			req.body.term3,
-			req.body.term4,
-			req.body.term5
-		]
+		var terms = (req.body.terms || [])
 			.filter(function(term) { return !!term; })
 			.map(function(term) { return term.trim(); });
 
@@ -49,7 +34,6 @@ router.post('/', loggedIn, function(req, res) {
 router.get('/:id(\\d+)', function(req, res) {
 	// Get poll
 	controller.get.poll(req.params.id, function(poll) {
-		console.log(poll);
 		if (!poll) return res.render('404');
 
 		// Get poll owner
@@ -57,9 +41,12 @@ router.get('/:id(\\d+)', function(req, res) {
 			poll.user = user;
 			// Get poll terms
 			controller.get.pollTerms(poll.id, function(terms) {
-				console.log(terms);
 				poll.terms = terms;
-				res.render('poll', { poll: poll });
+				// Check if the user has already voted in this poll
+				controller.get.vote(poll.id, req.identifier, function(vote) {
+					poll.vote = vote || {};
+					res.render('poll', { poll: poll });
+				})
 			});
 		});
 	});
@@ -72,11 +59,20 @@ router.get('/:id(\\d+)/votes', function(req, res) {
 });
 
 router.post('/:id(\\d+)/votes', function(req, res) {
-	if (!req.body.vote) res.redirect('/polls/' + req.params.id);
+	var redirect_url = '/polls/' + req.params.id;
 
-	controller.set.termVote(req.body.vote, req.identifier, function() {
-		res.redirect('/polls/' + req.params.id);
+	if (!req.body.vote) return res.redirect(redirect_url);
+
+	// Check if that user has already voted
+	controller.get.vote(parseInt(req.params.id), req.identifier, function(vote) {
+		if (vote !== undefined) return res.redirect(redirect_url);
+
+		// Add vote to poll
+		controller.set.termVote(req.body.vote, req.identifier, function() {
+			return res.redirect(redirect_url);
+		});
 	});
+
 });
 
 module.exports = router

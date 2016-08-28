@@ -8,14 +8,13 @@ block content
 			input.form-control(type="text" name="name")
 		fieldset.form-group
 			label Poll Terms
-			input.form-control(type="text" name="term1" placeholder="Term 1")
+		fieldset.term-set
+			.form-group
+				.input-group
+					input.form-control(type="text" name="terms[]")
+					.input-group-btn
+						button.btn.btn-danger.del-term(type="button" title="Delete option") X
 		fieldset.form-group
-			input.form-control(type="text" name="term2" placeholder="Term 2")
-		fieldset.form-group
-			input.form-control(type="text" name="term3" placeholder="Term 3")
-		fieldset.form-group
-			input.form-control(type="text" name="term4" placeholder="Term 4")
-		fieldset.form-group
-			input.form-control(type="text" name="term5" placeholder="Term 5")
+			button.btn.btn-primary.pull-right.new-term(title="Add a new poll option") +
 		fieldset.form-group
 			input.btn.btn-block.btn-success(type="submit")
