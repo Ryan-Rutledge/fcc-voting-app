@@ -1,0 +1,5 @@
+.btn.google-auth, .btn.google-auth:hover {
+	background-color: #d34836 !important;
+	color: #fff !important;
+	margin: auto;
+}

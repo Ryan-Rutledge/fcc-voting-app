@@ -5,12 +5,13 @@ router.use('/auth', require('./auth'));
 router.use('/polls', require('./polls'));
 
 router.get(['/', '/index', '/index.html'], function(req, res) {
-	console.log(req.user);
-	res.render('../templates/index');
-});
-
-router.get('/dashboard', function(req, res) {
-	res.send('Personal dashboard');
+	if (req.user)
+		controller.get.userPolls(req.user.id, function(polls) {
+			console.log(polls);
+			res.render('dashboard', { polls: polls });
+		});
+	else
+		res.redirect('/polls');
 });
 
 module.exports = router

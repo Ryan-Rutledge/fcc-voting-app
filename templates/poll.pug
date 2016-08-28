@@ -1,0 +1,20 @@
+extends layout
+
+block content
+	h2= poll.name
+		br
+		small= "A poll by " + poll.user.name
+
+	.container
+		.row
+			.col-xs-4
+				form(action=poll.id+"/votes" method="POST")
+					fieldset.form-group
+						label Vote
+						select.form-control(name="vote")
+							for term in poll.terms
+								option(value=term.id)= term.name
+					fieldset.form-group
+						input.btn.btn-block.btn-primary(type="submit")
+			.col-xs-8
+				canvas.poll-chart(data-id=poll.id)

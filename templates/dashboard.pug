@@ -1,0 +1,7 @@
+extends layout
+
+block content
+	h2 My Polls
+	.list-group
+		for poll in polls
+			a.list-group-item(href="/polls/" + poll.id)= poll.name

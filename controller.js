@@ -8,30 +8,23 @@ var query = {};
 query.get = {
 	user: db.prepare('SELECT * from users WHERE id=?;'),
 	poll: db.prepare('SELECT * FROM polls WHERE id=?;'),
-	everypoll: db.prepare('SELECT * FROM polls;'),
-	userPolls: db.prepare('SELECT * FROM polls WHERE user_id=?;'),
-	pollTerms: db.prepare('SELECT * FROM terms WHERE poll_id=?;'),
-	pollVotes: db.prepare('SELECT * FROM votes WHERE term_id in (SELECT id FROM terms WHERE poll_id=?);'),
-	termVotes: db.prepare('SELECT * FROM votes WHERE term_id=?;'),
-	lastID: db.prepare('SELECT last_insert_rowid() as id;')
+	everypoll: db.prepare('SELECT * FROM polls ORDER BY name;'),
+	userPolls: db.prepare('SELECT * FROM polls WHERE user_id=? ORDER BY name;'),
+	pollTerms: db.prepare('SELECT * FROM terms WHERE poll_id=? ORDER BY name;'),
+	pollVotes: db.prepare("SELECT t.name AS 'term', COUNT(v.id) AS 'count' FROM votes v, (SELECT * FROM terms WHERE poll_id in (SELECT id FROM polls WHERE id=?)) t WHERE v.term_id = t.id GROUP BY term_id;"),
+	termVotes: db.prepare('SELECT * FROM votes WHERE term_id=?;')
 };
 query.set = {
 	user: db.prepare('INSERT INTO users(id, name) VALUES(?, ?);'),
 	poll: db.prepare('INSERT INTO polls(user_id, name) VALUES(?, ?);'),
 	term: db.prepare('INSERT INTO terms(poll_id, name) VALUES(?, ?);'),
-	vote: db.prepare('INSERT INTO votes(term_id, user_id, ip_address) VALUES(?, ?, ?);'),
+	vote: db.prepare('INSERT INTO votes(term_id, identifier) VALUES(?, ?);')
 }
 
 function handle(cb) {
 	return function(err, results) {
 		if (err) console.error(err);
-		cb(results);
-	}
-}
-
-function getLastID(cb) {
-	return function(id) {
-		query.get.lastID.run(handle(cb));
+		if (cb) cb.call(this, results);
 	}
 }
 
@@ -40,9 +33,11 @@ function getUser(user_id, cb) {
 }
 
 function setUser(user_id, name, cb) {
-	query.set.user.run(user_id, name, handle(
-		getLastID(cb)
-	));
+	query.set.user.run(user_id, name,
+		handle(function() {
+			cb(this.lastID);
+		})
+	);
 }
 
 function findOrCreateUser(user_id, name, cb) {
@@ -55,8 +50,8 @@ function findOrCreateUser(user_id, name, cb) {
 	}))
 }
 
-function getPoll(cb) {
-	query.get.poll.get(handle(cb))
+function getPoll(poll_id, cb) {
+	query.get.poll.get(poll_id, handle(cb))
 }
 
 function getEveryPoll(cb) {
@@ -80,23 +75,29 @@ function getPollVotes(poll_id, cb) {
 }
 
 function setPollTerm(poll_id, name, cb) {
-	query.set.term.run(poll_id, name, handle(getLastID(cb)));
+	query.set.term.run(poll_id, name, handle(function() {
+		cb(this.lastID);
+	}));
 }
 
-function setTermVote(term_id, cb) {
-	query.set.vote.run(term_id, name, handle(getLastID(cb)));
+function setTermVote(term_id, id, cb) {
+	query.set.vote.run(term_id, id, handle(function() {
+		cb(this.lastID);
+	}));
 }
 
-function createPoll(user_id, name, cb) {
-	query.set.poll.run(user_id, name, handle(
-		getLastID(function(poll_id) {
+function createPoll(user_id, name, terms, cb) {
+	query.set.poll.run(user_id, name,
+		handle(function(poll_id) {
+			var poll_id = this.lastID;
+
 			for (let i = terms.length - 1; i >= 0; i--) {
-				setPollTerm(poll_id, function() {
+				setPollTerm(poll_id, terms[i], function() {
 					if (i === 0) return cb(poll_id);
 				});
 			}
 		})
-	));
+	);
 }
 
 module.exports = {

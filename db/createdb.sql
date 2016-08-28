@@ -21,7 +21,6 @@ CREATE TABLE terms(
 DROP TABLE IF EXISTS votes;
 CREATE TABLE votes(
 	id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-	user_id REFERENCES users(id),
-	ip_address TEXT,
+	identifier TEXT UNIQUE NOT NULL,
 	term_id REFERENCES polls(id)
 );
