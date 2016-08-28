@@ -13,9 +13,9 @@ block content
 				h3.text-center You voted for 
 					span.text-muted= poll.vote.term
 		else
-			.col-xs-4
+			.col-md-4.col-xs-12
 				include voteform
-			.col-xs-8
+			.col-md-8.col-xs-12
 				canvas.poll-chart(data-id=poll.id)
 
 		
