@@ -55,4 +55,9 @@ $(function() {
 				alert('Error contacting server.\nUnable to write in option.');
 			});
 	});
+	
+	// Add populate self-link
+	$('.self-link')
+		.attr('href', location.toLocaleString())
+		.text(location.toLocaleString())
 });

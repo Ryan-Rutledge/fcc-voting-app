@@ -61,9 +61,7 @@ router.get('/:id(\\d+)/delete', loggedIn, function(req, res) {
 		controller.del.poll(req.params.id, function() {
 			return res.redirect('/');
 		});
-		
 	});
-
 });
 
 router.get('/:id(\\d+)/votes', function(req, res) {
