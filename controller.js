@@ -21,6 +21,9 @@ query.set = {
 	term: db.prepare('INSERT INTO terms(poll_id, name) VALUES(?, ?);'),
 	vote: db.prepare('INSERT INTO votes(term_id, identifier) VALUES(?, ?);')
 }
+query.del = {
+	poll: db.prepare('DELETE FROM polls WHERE id=?'),
+}
 
 function handle(cb) {
 	return function(err, results) {
@@ -105,6 +108,10 @@ function createPoll(user_id, name, terms, cb) {
 	);
 }
 
+function deletePoll(poll_id, cb) {
+	query.del.poll.run(poll_id, handle(cb));
+}
+
 module.exports = {
 	findOrCreateUser: findOrCreateUser,
 	get: {
@@ -121,5 +128,8 @@ module.exports = {
 		poll: createPoll,
 		pollTerm: setPollTerm,
 		termVote: setTermVote
+	},
+	del: {
+		poll: deletePoll,
 	}
 };

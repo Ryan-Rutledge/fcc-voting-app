@@ -3,3 +3,8 @@
 	color: #fff !important;
 	margin: auto;
 }
+
+.dashboard h4 {
+	margin: 0;
+	display: inline-block;
+}

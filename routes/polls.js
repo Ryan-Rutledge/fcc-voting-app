@@ -35,7 +35,7 @@ router.get('/:id(\\d+)', function(req, res) {
 	// Get poll
 	controller.get.poll(req.params.id, function(poll) {
 		if (!poll) return res.status(404).render('404');
-
+		
 		// Get poll owner
 		controller.get.user(poll.user_id, function(user) {
 			poll.user = user;
@@ -50,6 +50,20 @@ router.get('/:id(\\d+)', function(req, res) {
 			});
 		});
 	});
+});
+
+router.get('/:id(\\d+)/delete', loggedIn, function(req, res) {
+	// Get poll info
+	controller.get.poll(req.params.id, function(poll) {
+		// If logged in user is not the owner
+		if (poll.user_id !== req.user.id) return res.redirect('/');
+
+		controller.del.poll(req.params.id, function() {
+			return res.redirect('/');
+		});
+		
+	});
+
 });
 
 router.get('/:id(\\d+)/votes', function(req, res) {

@@ -2,6 +2,10 @@ extends layout
 
 block content
 	h2 My Polls
-	.list-group
+	.dashboard.list-group
 		for poll in polls
-			a.list-group-item(href="/polls/" + poll.id)= poll.name
+			.list-group-item
+				a(href="/polls/" + poll.id)= poll.name
+				h4.pull-right
+					a.label.label-danger(href="/polls/" + poll.id + "/delete") Delete
+				.clearfix
